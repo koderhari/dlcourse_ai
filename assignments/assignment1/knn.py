@@ -5,6 +5,7 @@ class KNN:
     """
     K-neariest-neighbor classifier using L1 loss
     """
+
     def __init__(self, k=1):
         self.k = k
 
@@ -20,6 +21,8 @@ class KNN:
         X, np array (num_samples, num_features) - samples to run
            through the model
         num_loops, int - which implementation to use
+
+
 
         Returns:
         predictions, np array of ints (num_samples) - predicted class
@@ -53,9 +56,11 @@ class KNN:
         num_test = X.shape[0]
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
-            for i_train in range(num_train):
+            for j_train in range(num_train):
                 # TODO: Fill dists[i_test][i_train]
-                pass
+                dists[i_test][j_train] = np.sum(np.abs(X[i_test] - self.train_X[j_train]))
+
+        return dists
 
     def compute_distances_one_loop(self, X):
         '''
@@ -75,7 +80,9 @@ class KNN:
         for i_test in range(num_test):
             # TODO: Fill the whole row of dists[i_test]
             # without additional loops or list comprehensions
-            pass
+            dists[i_test] = np.sum(np.abs(self.train_X - X[i_test]), axis=1)
+
+        return dists
 
     def compute_distances_no_loops(self, X):
         '''
@@ -94,7 +101,9 @@ class KNN:
         # Using float32 to to save memory - the default is float64
         dists = np.zeros((num_test, num_train), np.float32)
         # TODO: Implement computing all distances with no loops!
-        pass
+        dists = np.sum(np.abs(X[:, None] - self.train_X), axis=2)
+
+        return dists
 
     def predict_labels_binary(self, dists):
         '''
@@ -113,7 +122,17 @@ class KNN:
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            n_idx_min_distances = np.argsort(dists[i])[:self.k]
+
+            unique, counts = np.unique(self.train_y[n_idx_min_distances], return_counts=True)
+            group_by_class = dict(zip(unique, counts))
+            max_k = None
+            max_v = 0
+            for k, v in group_by_class.items():
+                if max_v < v:
+                    max_v = v
+                    max_k = k
+            pred[i] = max_k
         return pred
 
     def predict_labels_multiclass(self, dists):
