@@ -148,10 +148,18 @@ class KNN:
            for every test sample
         '''
         num_test = dists.shape[0]
-        num_test = dists.shape[0]
         pred = np.zeros(num_test, np.int)
         for i in range(num_test):
             # TODO: Implement choosing best class based on k
             # nearest training samples
-            pass
+            n_idx_min_distances = np.argsort(dists[i])[:self.k]
+            unique, counts = np.unique(self.train_y[n_idx_min_distances], return_counts=True)
+            group_by_class = dict(zip(unique, counts))
+            max_k = None
+            max_v = 0
+            for k, v in group_by_class.items():
+                if max_v < v:
+                    max_v = v
+                    max_k = k
+            pred[i] = max_k
         return pred
