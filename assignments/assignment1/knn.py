@@ -153,13 +153,17 @@ class KNN:
             # TODO: Implement choosing best class based on k
             # nearest training samples
             n_idx_min_distances = np.argsort(dists[i])[:self.k]
+            #print(dists[i][n_idx_min_distances[0]])
+            #print(np.min(dists[i]))
             unique, counts = np.unique(self.train_y[n_idx_min_distances], return_counts=True)
             group_by_class = dict(zip(unique, counts))
+            #print(group_by_class)
             max_k = None
             max_v = 0
             for k, v in group_by_class.items():
                 if max_v < v:
                     max_v = v
                     max_k = k
+            #print(max_k)
             pred[i] = max_k
         return pred
