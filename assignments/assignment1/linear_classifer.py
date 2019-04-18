@@ -15,7 +15,15 @@ def softmax(predictions):
     '''
     # TODO implement softmax
     # Your final implementation shouldn't have any loops
-    raise Exception("Not implemented!")
+    predictions_copy = predictions.copy()
+    predictions_copy -= np.max(predictions_copy)
+    e = np.exp(predictions_copy)
+    if len(predictions.shape) == 2:
+        denom = np.sum(e, axis=1).shape(predictions.shape[0],1)  #
+    else:
+        denom = np.sum(e)
+
+    return e / denom
 
 
 def cross_entropy_loss(probs, target_index):
@@ -33,7 +41,12 @@ def cross_entropy_loss(probs, target_index):
     '''
     # TODO implement cross-entropy
     # Your final implementation shouldn't have any loops
-    raise Exception("Not implemented!")
+    if type(target_index) is int:
+        return -np.log(probs[target_index])
+    else:
+        return -np.sum(np.log(probs[target_index])) / target_index.shape(0)     # среднее значение
+
+    #raise Exception("Not implemented!")
 
 
 def softmax_with_cross_entropy(predictions, target_index):
@@ -53,8 +66,45 @@ def softmax_with_cross_entropy(predictions, target_index):
     '''
     # TODO implement softmax with cross-entropy
     # Your final implementation shouldn't have any loops
-    raise Exception("Not implemented!")
+    #raise Exception("Not implemented!")
+    print(predictions)
+    probs = softmax(predictions)
+    loss = cross_entropy_loss(probs, target_index)
+    print(loss)
+    d_soft = -1 / probs[target_index]
+    print(d_soft)
+    predictions_copy = predictions.copy()
+    predictions_copy -= np.max(predictions_copy)
+    denom = np.sum(np.exp(predictions_copy)) #axis=1
 
+    #print(denom.shape) == target_index.shape
+    #print(probs)
+#ты кусок гавна зачем probs возводишь в exp это уже наши предикшины возведенные в экспоненту это уже softmax!!!
+    #надо с предикшинами работать
+    exp = np.exp(predictions_copy)
+    print(predictions_copy)
+    print(exp)
+    print(denom)
+    #print(denom)
+    #в зависимости от таргета индекса производная будет разная
+    #print(exp)
+    #d_z = (exp * denom - exp * exp) / (denom * denom)
+    S = exp / denom
+    print(S)
+    #print(S)
+    #print(predictions.shape)
+    #print(S.shape) # must be as predictions or probs shape
+    print('---')
+    #d_z = S * (1 - S) # для таргет индексов
+    d_z = - S[target_index] * S
+    d_z[target_index] += S[target_index] # S_i^2 - S_i*S_j
+    #d_z = S
+    # -S_i*S_j для не таргет
+    #print(d_soft * S * (1 - S))
+    #print(d_z.shape)
+    dprediction = d_soft * d_z
+    #print(dprediction) must have shape as predictions
+    #print(dprediction)
     return loss, dprediction
 
 
@@ -93,7 +143,7 @@ def linear_softmax(X, W, target_index):
 
     '''
     predictions = np.dot(X, W)
-
+    # здесь просто вызвать софтмак виз кросс энтропи
     # TODO implement prediction and gradient over W
     # Your final implementation shouldn't have any loops
     raise Exception("Not implemented!")
@@ -129,9 +179,12 @@ class LinearSoftmaxClassifier():
         for epoch in range(epochs):
             shuffled_indices = np.arange(num_train)
             np.random.shuffle(shuffled_indices)
+            #возможно здесь будет 0 вместо первого параметра batch_size?
             sections = np.arange(batch_size, num_train, batch_size)
             batches_indices = np.array_split(shuffled_indices, sections)
-
+            #здесь нюанс кэ и рег разбиты на два шага, по факту это так и есть
+            #даже градиент это получается сумма производных двух функции
+            #то есть вычитать из W тоже можно по очереди
             # TODO implement generating batches from indices
             # Compute loss and gradients
             # Apply gradient to weights using learning rate
@@ -155,7 +208,7 @@ class LinearSoftmaxClassifier():
           y_pred, np.array of int (test_samples)
         '''
         y_pred = np.zeros(X.shape[0], dtype=np.int)
-
+        # здесь я просто считаю софтмакс беру максимальный скоре и это мой предикт
         # TODO Implement class prediction
         # Your final implementation shouldn't have any loops
         raise Exception("Not implemented!")
