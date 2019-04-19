@@ -19,7 +19,8 @@ def softmax(predictions):
     predictions_copy -= np.max(predictions_copy)
     e = np.exp(predictions_copy)
     if len(predictions.shape) == 2:
-        denom = np.sum(e, axis=1).shape(predictions.shape[0],1)  #
+        denom = np.sum(e, axis=1).reshape(predictions.shape[0],1)  #
+        #print(denom)
     else:
         denom = np.sum(e)
 
@@ -44,7 +45,11 @@ def cross_entropy_loss(probs, target_index):
     if type(target_index) is int:
         return -np.log(probs[target_index])
     else:
-        return -np.sum(np.log(probs[target_index])) / target_index.shape(0)     # среднее значение
+        #predictions[np.arange(batch_size), target_index.reshape(-1)]
+        #print(probs.shape[0])
+        #print(-np.sum(np.log(probs[np.arange(probs.shape[0]),target_index.reshape(-1)])) / probs.shape[0])
+        #print(-np.average(np.log(probs[np.arange(probs.shape[0]),target_index.reshape(-1)])))
+        return -np.sum(np.log(probs[np.arange(probs.shape[0]),target_index.reshape(-1)])) / probs.shape[0]     # среднее значение
 
     #raise Exception("Not implemented!")
 
@@ -67,42 +72,75 @@ def softmax_with_cross_entropy(predictions, target_index):
     # TODO implement softmax with cross-entropy
     # Your final implementation shouldn't have any loops
     #raise Exception("Not implemented!")
-    print(predictions)
+    #print(predictions)
     probs = softmax(predictions)
     loss = cross_entropy_loss(probs, target_index)
-    print(loss)
-    d_soft = -1 / probs[target_index]
-    print(d_soft)
+    if type(target_index) is int:
+        d_f = 1
+        target_idx= (target_index)
+    else:
+        d_f = 1 / probs.shape[0]
+        target_idx = (np.arange(probs.shape[0]),target_index.reshape(-1))
+    d_soft = -1 / probs[target_idx]
+    d_soft *= d_f
+    #print(d_soft)
+
+
+
+    #print(d_soft)
     predictions_copy = predictions.copy()
     predictions_copy -= np.max(predictions_copy)
-    denom = np.sum(np.exp(predictions_copy)) #axis=1
+    exp =np.exp(predictions_copy)
+    #denom = np.sum(np.exp(predictions_copy)) #axis=1
 
+    if len(predictions.shape) == 2:
+        denom = np.sum(exp, axis=1).reshape(predictions.shape[0],1)  #
+    else:
+        denom = np.sum(exp)
+
+    #print(denom)
     #print(denom.shape) == target_index.shape
     #print(probs)
 #ты кусок гавна зачем probs возводишь в exp это уже наши предикшины возведенные в экспоненту это уже softmax!!!
     #надо с предикшинами работать
-    exp = np.exp(predictions_copy)
-    print(predictions_copy)
-    print(exp)
-    print(denom)
+    #exp = np.exp(predictions_copy)
+    #print(predictions_copy)
+    #print(exp)
+    #print(denom)
     #print(denom)
     #в зависимости от таргета индекса производная будет разная
     #print(exp)
     #d_z = (exp * denom - exp * exp) / (denom * denom)
+    #print(exp)
+    #print("/")
+    #print(denom)
     S = exp / denom
-    print(S)
+    #print(S.shape)
+    #print("=")
+    #print(S)
     #print(S)
     #print(predictions.shape)
     #print(S.shape) # must be as predictions or probs shape
-    print('---')
+    #print('---')
     #d_z = S * (1 - S) # для таргет индексов
-    d_z = - S[target_index] * S
-    d_z[target_index] += S[target_index] # S_i^2 - S_i*S_j
+    if type(target_index) is int:
+        d_z = - S[target_idx] * S
+    else:
+        d_z = - S * S[target_idx].reshape(S.shape[0],1)
+
+    d_z[target_idx] += S[target_idx] # S_i^2 - S_i*S_j
     #d_z = S
     # -S_i*S_j для не таргет
     #print(d_soft * S * (1 - S))
     #print(d_z.shape)
-    dprediction = d_soft * d_z
+
+    if type(target_index) is int:
+        dprediction = d_soft * d_z
+    else:
+        dprediction = d_soft.reshape(d_z.shape[0],1) * d_z
+
+
+    #dprediction = d_soft * d_z
     #print(dprediction) must have shape as predictions
     #print(dprediction)
     return loss, dprediction

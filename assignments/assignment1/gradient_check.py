@@ -41,11 +41,14 @@ def check_gradient(f, x, delta=1e-5, tol = 1e-4):
         analytic_grad_at_ix = analytic_grad[ix]
         from_x = orig_x.copy()
         to_x = orig_x.copy()
-
+        #print(ix)
+        #print(orig_x)
+        #print(from_x)
         from_x[ix] = orig_x[ix] - tol
         to_x[ix] = orig_x[ix] + tol
         f_x_from, foo = f(from_x)
         f_x_to, foo = f(to_x)
+        #print(f_x_to)
         numeric_grad_at_ix = (f_x_to - f_x_from) / (2 * tol)
         #нужно взять х прибавить-отнять эпсилон скормить функции и вычислить градиент
         # TODO compute value of numeric gradient of f to idx
